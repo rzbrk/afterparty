@@ -6,15 +6,15 @@ bgr='\033[1;32m'            # bold + green
 rst='\033[0m'               # reset
 
 # Read configuration files
-configs="/etc/afterparty.conf ~/.afterparty.conf"
+configs="/etc/afterparty.conf ${HOME}/.afterparty.conf"
 for conf in ${configs}
 do
-    echo "File: ${conf}"
-    if [ -r ${conf} ]; then
-        echo "Read ${conf} . . ."
+    if [ -r "${conf}" ]; then
         source ${conf}
     fi
 done
+
+echo $keysrv
 
 #gpgbin="/usr/bin/gpg"
 #keysrv="pgp.mit.edu"
