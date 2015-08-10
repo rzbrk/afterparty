@@ -22,11 +22,22 @@ do
     fi
 done
 
-#i Test if GnuPG executable exist
+# Convert key id to upper-case
+mykeyid=${mykeyid^^}
+
+# Test if GnuPG executable exist
 if [ ! -f "${gpgbin}" -a ! -x "${gpgbin}" ]
 then
     printf "\nERROR: Cannot find GnuPG executable.\n\n"
-    die
+    exit 1
+fi
+
+# Test if key ID of variable ${mykeyid} is contained in the secret keyring
+test_mykeyid=$( ${gpgbin} -K | grep ${mykeyid} | wc -l )
+if [ ${test_mykeyid} -ne 1 ]
+then
+    printf "\nERROR: Key ${mykeyid} not contained in secret keyring.\n\n"
+    exit 1
 fi
 
 # Determine the user language. If german, then user input for "yes" is key "j",
@@ -45,6 +56,9 @@ input=${input//,/ }
 # Loop over the keys, or at least what we assume to be keys ;)
 for key in ${input}
 do
+    # Convert key to upper-case
+    key=${key^^}
+
     # Fetch/update key from keyserver
     printf "\n>>> Fetch key ${bgr}${key}${rst} from keyserver . . .\n"
     $gpgbin --keyserver ${keysrv} --recv-keys ${key} > /dev/null 2>&1
