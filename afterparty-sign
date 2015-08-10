@@ -12,6 +12,16 @@ printf "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.
 printf "This is free software: you are free to change and redistribute it.\n"
 printf "There is NO WARRANTY, to the extent permitted by law.\n"
 
+# Print help if any argument is present
+if [ $# -gt 0 ]
+then
+    printf "\nUsage:\n"
+    printf " $0 --help # Print help message\n"
+    printf " echo \"12345678 87654321\" | $0\n"
+    printf " cat keyfile.txt | $0\n\n"
+    exit 0
+fi
+
 # Read configuration files
 configs="/etc/afterparty.conf ${HOME}/.afterparty.conf"
 for conf in ${configs}
@@ -47,7 +57,7 @@ if [[ ${LANG} == de_DE* ]]; then
     ans_yes="j"
 fi
 
-# Read list of keys from STDIN.
+# Read list of keys from STDIN
 input=$(</dev/stdin)
 
 # Replace all existing delimiters "," by " "
