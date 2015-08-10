@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Define colors for output
+brd='\033[1;31m'            # bold + red
+bgr='\033[1;32m'            # bold + green
+rst='\033[0m'               # reset
+
+# Read configuration files
+configs="/etc/afterparty.conf ~/.afterparty.conf"
+for conf in ${configs}
+do
+    echo "File: ${conf}"
+    if [ -r ${conf} ]; then
+        echo "Read ${conf} . . ."
+        source ${conf}
+    fi
+done
+
+#gpgbin="/usr/bin/gpg"
+#keysrv="pgp.mit.edu"
+#mykeyid="F9D7C891"
+
+# Determine the user language. If german, then user input for "yes" is key "j",
+# otherwise key "y"
+ans_yes="y"
+if [[ ${LANG} == de_DE* ]]; then
+    ans_yes="j"
+fi
+
+# Welcome message
+printf ">>>${bgr}afterparty-sign${rst}<<<\n"
+printf "Copyright (C) 2015 Jan Grosser (email@jan-grosser.de)\n"
+printf "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+printf "This is free software: you are free to change and redistribute it.\n"
+printf "There is NO WARRANTY, to the extent permitted by law.\n"
+
+# Read list of keys from STDIN.
+input=$(</dev/stdin)
+
+# Replace all existing delimiters "," by " "
+input=${input//,/ }
+
+# Loop over the keys, or at least what we assume to be keys ;)
+for key in ${input}
+do
+    # Fetch/update key from keyserver
+    printf "\n>>> Fetch key ${bgr}${key}${rst} from keyserver . . .\n"
+    $gpgbin --keyserver ${keysrv} --recv-keys ${key} > /dev/null 2>&1
+    
+    # Go ahead only if key was found on the keyserver. Otherwise print warning
+    # message and proceed with following key
+    if [ $? -eq 0 ]; then
+        # Signing key. Use the user dialog provided by GnuPG.
+        ${gpgbin} -u ${mykeyid} --sign-key ${key}
+        
+        # Ask user if key shall be uploaded to keyserver
+        printf "\n\nUpload signed key ${key} to keyserver (${ans_yes}/N)? "
+            read answer </dev/tty
+        if [ "${answer^^}" == "Y" ]; then
+            printf "Upload to keyserver . . .\n"
+            # ${gpgbin} --keyserver ${keysrv} --send-key ${key}
+        fi
+
+        # Ask user if key shall be mailed to key owner
+        # Has to be written
+
+    else
+        printf "   Key ${key} was not found on keyserver ${keysrv}.\n"
+    fi
+done
+
