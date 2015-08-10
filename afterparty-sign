@@ -5,20 +5,29 @@ brd='\033[1;31m'            # bold + red
 bgr='\033[1;32m'            # bold + green
 rst='\033[0m'               # reset
 
+# Welcome message
+printf ">>>${bgr}afterparty-sign${rst}<<<\n"
+printf "Copyright (C) 2015 Jan Grosser (email@jan-grosser.de)\n"
+printf "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+printf "This is free software: you are free to change and redistribute it.\n"
+printf "There is NO WARRANTY, to the extent permitted by law.\n"
+
 # Read configuration files
 configs="/etc/afterparty.conf ${HOME}/.afterparty.conf"
 for conf in ${configs}
 do
-    if [ -r "${conf}" ]; then
+    if [ -r "${conf}" ]
+    then
         source ${conf}
     fi
 done
 
-echo $keysrv
-
-#gpgbin="/usr/bin/gpg"
-#keysrv="pgp.mit.edu"
-#mykeyid="F9D7C891"
+#i Test if GnuPG executable exist
+if [ ! -f "${gpgbin}" -a ! -x "${gpgbin}" ]
+then
+    printf "\nERROR: Cannot find GnuPG executable.\n\n"
+    die
+fi
 
 # Determine the user language. If german, then user input for "yes" is key "j",
 # otherwise key "y"
@@ -26,13 +35,6 @@ ans_yes="y"
 if [[ ${LANG} == de_DE* ]]; then
     ans_yes="j"
 fi
-
-# Welcome message
-printf ">>>${bgr}afterparty-sign${rst}<<<\n"
-printf "Copyright (C) 2015 Jan Grosser (email@jan-grosser.de)\n"
-printf "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-printf "This is free software: you are free to change and redistribute it.\n"
-printf "There is NO WARRANTY, to the extent permitted by law.\n"
 
 # Read list of keys from STDIN.
 input=$(</dev/stdin)
@@ -65,7 +67,7 @@ do
         # Has to be written
 
     else
-        printf "   Key ${key} was not found on keyserver ${keysrv}.\n"
+        printf "\nKey ${key} was not found on keyserver ${keysrv}.\n"
     fi
 done
 
