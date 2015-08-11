@@ -3,6 +3,7 @@
 # Define colors for output
 brd='\033[1;31m'            # bold + red
 bgr='\033[1;32m'            # bold + green
+byl='\033[1;33m'            # bold + yellow
 rst='\033[0m'               # reset
 
 # Welcome message
@@ -63,14 +64,18 @@ input=$(</dev/stdin)
 # Replace all existing delimiters "," by " "
 input=${input//,/ }
 
+# Count the keys
+n_keys=$( echo $input | awk '{ print NF }' )
+
 # Loop over the keys, or at least what we assume to be keys ;)
+cnt=1
 for key in ${input}
 do
     # Convert key to upper-case
     key=${key^^}
 
     # Fetch/update key from keyserver
-    printf "\n>>> Fetch key ${bgr}${key}${rst} from keyserver . . .\n"
+    printf "\n>>> (${byl}${cnt}${rst} of ${byl}${n_keys}${rst}) Fetch key ${bgr}${key}${rst} from keyserver . . .\n"
     $gpgbin --keyserver ${keysrv} --recv-keys ${key} > /dev/null 2>&1
     
     # Go ahead only if key was found on the keyserver. Otherwise print warning
@@ -93,5 +98,9 @@ do
     else
         printf "\nKey ${key} was not found on keyserver ${keysrv}.\n"
     fi
+    # Increment key counter
+    cnt=$[cnt + 1]
 done
+
+printf "\nAll keys processed.\n\n"
 
